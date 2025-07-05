@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Control Oficial Alcoholímetro - Policía</title>
+<style>
+  /* RESET */
+  * {
+    margin:0; padding:0; box-sizing: border-box;
+  }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f1217, #1b1d23);
+    color: #cbd5e1;
+    min-height: 100vh;
+    display: flex;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: 280px;
+    background: #11141b;
+    display: flex;
+    flex-direction: column;
+    padding: 25px 20px;
+    box-shadow: 2px 0 15px rgba(0,0,0,0.8);
+    position: fixed;
+    height: 100vh;
+    transition: width 0.3s ease;
+  }
+
+  #sidebar h2 {
+    color: #45a29e;
+    text-align: center;
+    margin-bottom: 35px;
+    letter-spacing: 3px;
+    font-weight: 900;
+    font-size: 1.8rem;
+    text-shadow: 0 0 10px #45a29e;
+  }
+
+  #sidebar nav {
+    flex-grow: 1;
+  }
+  #sidebar nav button {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #8ca4b4;
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 14px 15px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    text-align: left;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+    box-shadow: inset 0 0 0 transparent;
+  }
+  #sidebar nav button:hover, #sidebar nav button.active {
+    background: #45a29e;
+    color: #0f1217;
+    box-shadow: inset 0 0 10px #45a29e;
+  }
+
+  #sidebar .logout-btn {
+    background: #e53e3e;
+    color: #fff;
+    font-weight: 700;
+    margin-top: auto;
+    padding: 14px 15px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px #e53e3e;
+  }
+  #sidebar .logout-btn:hover {
+    background: #ff4d4d;
+    box-shadow: 0 0 20px #ff4d4d;
+  }
+
+  /* MAIN AREA */
+  #main {
+    margin-left: 280px;
+    flex-grow: 1;
+    padding: 30px 35px;
+    overflow-y: auto;
+    background: linear-gradient(180deg, #1e2028 0%, #121317 100%);
+    height: 100vh;
+    scroll-behavior: smooth;
+  }
+
+  h1, h2, h3 {
+    margin-bottom: 20px;
+    font-weight: 800;
+    color: #e0f2f1;
+    text-shadow: 0 0 10px #2bbbad;
+  }
+
+  /* FORM STYLES */
+  form {
+    max-width: 720px;
+    background: #1e272c;
+    padding: 25px 30px;
+    border-radius: 14px;
+    box-shadow: 0 0 25px rgba(43,187,173,0.7);
+    color: #a0becf;
+  }
+
+  form input[type="text"],
+  form input[type="email"],
+  form input[type="password"],
+  form input[type="number"],
+  form textarea,
+  form input[type="file"] {
+    width: 100%;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    border-radius: 10px;
+    border: none;
+    font-size: 1rem;
+    background: #2a353f;
+    color: #cbd5e1;
+    box-shadow: inset 0 0 8px #144d53;
+    transition: box-shadow 0.25s ease;
+  }
+  form input[type="text"]:focus,
+  form input[type="email"]:focus,
+  form input[type="password"]:focus,
+  form input[type="number"]:focus,
+  form textarea:focus,
+  form input[type="file"]:focus {
+    outline: none;
+    box-shadow: 0 0 14px #2bbbad;
+    background: #233038;
+  }
+
+  form textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  form label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: block;
+    color: #66d9ef;
+    text-shadow: 0 0 8px #66d9ef;
+  }
+
+  form button {
+    background: #2bbbad;
+    color: #121317;
+    font-weight: 700;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 0;
+    font-size: 1.15rem;
+    cursor: pointer;
+    box-shadow: 0 0 15px #2bbbad;
+    transition: background 0.3s, box-shadow 0.3s;
+  }
+  form button:hover {
+    background: #28a79a;
+    box-shadow: 0 0 25px #28a79a;
+  }
+  form button:active {
+    transform: scale(0.97);
+  }
+
+  /* ALERTS */
+  .alert {
+    padding: 12px 18px;
+    border-radius: 10px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-align: center;
+    user-select: none;
+  }
+  .alert.success {
+    background: #27ae6033;
+    color: #27ae60;
+    text-shadow: 0 0 4px #27ae60;
+  }
+  .alert.error {
+    background: #e74c3c33;
+    color: #e74c3c;
+    text-shadow: 0 0 4px #e74c3c;
+  }
+
+  /* TABLE */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 12px;
+    font-size: 0.95rem;
+  }
+  th, td {
+    padding: 14px 20px;
+    background: #233038;
+    color: #cbd5e1;
+    border-radius: 10px;
+    box-shadow: inset 0 0 8px #144d53;
+    vertical-align: middle;
+    user-select: text;
+  }
+  th {
+    background: #1b242c;
+    font-weight: 700;
+    color: #45a29e;
+    text-shadow: 0 0 8px #45a29e;
+  }
+
+  /* Rows */
+  tbody tr:hover {
+    background: #2bbbad33;
+    cursor: pointer;
+  }
+
+  /* Imagen pequeña en tabla */
+  .person-img {
+    width: 55px;
+    height: 55px;
+    object-fit: cover;
+    border-radius: 12px;
+    box-shadow: 0 0 10px #2bbbadaa;
+  }
+
+  /* Resultado Positivo y Negativo */
+  .result-negative {
+    background: #ff0000;
+    color: #e9f5ee;
+    padding: 6px 12px;
+    font-weight: 700;
+    border-radius: 15px;
+    box-shadow: 0 0 12px #27ae60aa;
+    text-align: center;
+  }
+  .result-positive {
+    background: #33ff00;
+    color: #fbeaea;
+    padding: 6px 12px;
+    font-weight: 700;
+    border-radius: 15px;
+    box-shadow: 0 0 12px #e74c3caa;
+    text-align: center;
+  }
+
+  /* Delete button */
+  .delete-btn {
+    background: #e53e3e;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 15px;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 0 10px #e53e3eaa;
+    transition: background 0.3s;
+    user-select: none;
+  }
+  .delete-btn:hover {
+    background: #ff5a5a;
+  }
+  .delete-btn:active {
+    transform: scale(0.95);
+  }
+
+  /* MODAL */
+  #modalOverlay {
+    position: fixed;
+    top:0; left:0; width:100vw; height:100vh;
+    background-color: rgba(0,0,0,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+  }
+  #modalContent {
+    background: #1e272c;
+    border-radius: 18px;
+    padding: 25px 30px;
+    max-width: 480px;
+    width: 90%;
+    color: #cbd5e1;
+    box-shadow: 0 0 40px #2bbbadaa;
+    position: relative;
+    text-align: center;
+    user-select: text;
+    animation: modalFadeIn 0.35s ease forwards;
+  }
+  #modalContent img {
+    width: 100%;
+    max-height: 280px;
+    border-radius: 15px;
+    object-fit: cover;
+    margin-bottom: 20px;
+    box-shadow: 0 0 30px #2bbbadbb;
+  }
+  #modalContent h3 {
+    font-weight: 900;
+    color: #2bbbad;
+    margin-bottom: 12px;
+    text-shadow: 0 0 10px #2bbbadaa;
+  }
+  #modalContent p {
+    margin: 8px 0;
+    font-size: 1.1rem;
+  }
+  #modalContent p strong {
+    color: #45a29e;
+    user-select: text;
+  }
+  #modalCloseBtn {
+    position: absolute;
+    top: 12px;
+    right: 18px;
+    font-size: 1.8rem;
+    color: #cbd5e1;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.3s;
+  }
+  #modalCloseBtn:hover {
+    color: #2bbbad;
+  }
+
+  /* Animations */
+  @keyframes modalFadeIn {
+    from {opacity: 0; transform: scale(0.8);}
+    to {opacity: 1; transform: scale(1);}
+  }
+
+  /* AUTH CONTAINER */
+  #authContainer {
+    margin: auto;
+    max-width: 420px;
+    background: #1e272c;
+    padding: 40px 45px;
+    border-radius: 18px;
+    box-shadow: 0 0 45px #2bbbadbb;
+    margin-top: 7vh;
+    text-align: center;
+    color: #a0becf;
+    user-select: none;
+  }
+  #authContainer h2 {
+    margin-bottom: 28px;
+    font-weight: 900;
+    color: #2bbbad;
+    text-shadow: 0 0 12px #2bbbadcc;
+  }
+  #authContainer p {
+    font-size: 0.95rem;
+    margin-top: 22px;
+    color: #45a29e;
+    user-select: text;
+  }
+  #authContainer a {
+    color: #2bbbad;
+    cursor: pointer;
+    font-weight: 700;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  #authContainer a:hover {
+    color: #45a29e;
+  }
+
+  /* SEARCH INPUT */
+  #searchTests {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 12px;
+    border: none;
+    background: #233038;
+    color: #a0becf;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    box-shadow: inset 0 0 12px #144d53;
+    transition: box-shadow 0.3s;
+  }
+  #searchTests:focus {
+    outline: none;
+    box-shadow: 0 0 18px #2bbbad;
+    background: #1c2831;
+  }
+
+  /* SECTIONS */
+  section {
+    animation: fadeInUp 0.5s ease forwards;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0; transform: translateY(15px);
+    }
+    to {
+      opacity: 1; transform: translateY(0);
+    }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar {
+    width: 9px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #11141b;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #2bbbadaa;
+    border-radius: 8px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    #sidebar {
+      width: 60px;
+      padding: 15px 8px;
+    }
+    #sidebar h2 {
+      font-size: 0;
+      margin-bottom: 0;
+      height: 0;
+      overflow: hidden;
+    }
+    #sidebar nav button {
+      padding-left: 12px;
+      font-size: 0;
+      position: relative;
+    }
+    #sidebar nav button::before {
+      content: attr(data-short);
+      font-size: 1.4rem;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      color: #45a29e;
+      user-select: none;
+    }
+    #main {
+      margin-left: 60px;
+      padding: 20px 25px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Sidebar menú -->
+<div id="sidebar" style="display:none;">
+  <h2>CONTROL POLICIAL</h2>
+  <nav>
+    <button id="navDashboard" class="active" data-short="🏠" onclick="showSection('dashboard')">Dashboard</button>
+    <button id="navRegisterTest" data-short="📝" onclick="showSection('registerTest')">Registrar Prueba</button>
+    <button id="navHistory" data-short="📜" onclick="showSection('history')">Historial</button>
+    <button id="navReports" data-short="📊" onclick="showSection('reports')">Reportes</button>
+    <button id="navStats" data-short="📈" onclick="showSection('stats')">Estadísticas</button>
+    <button id="navProfile" data-short="👮" onclick="showSection('profile')">Perfil</button>
+  </nav>
+  <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+</div>
+
+<!-- Main container -->
+<div id="main" style="display:none;">
+
+  <!-- Dashboard -->
+  <section id="dashboard" class="card">
+    <h1>Panel Principal</h1>
+    <p>Bienvenido al sistema oficial de control de alcoholímetro policial.</p>
+    <p><strong>Pruebas registradas:</strong> <span id="totalTests">0</span></p>
+  </section>
+
+  <!-- Registrar prueba -->
+  <section id="registerTest" class="card" style="display:none;">
+    <h2>Registrar Nueva Prueba</h2>
+    <form id="testForm" enctype="multipart/form-data" autocomplete="off">
+      <label for="testName">Nombre de la persona</label>
+      <input type="text" id="testName" placeholder="Ej. Juan Pérez" required />
+      <label for="testId">ID o CURP</label>
+      <input type="text" id="testId" placeholder="Ej. ABCD123456" required />
+      <label for="vehiclePlate">Placa del vehículo (si conducía)</label>
+      <input type="text" id="vehiclePlate" placeholder="Ej. XYZ-987" maxlength="10" />
+      <label for="alcoholLevel">Nivel de alcohol (mg/dL)</label>
+      <input type="number" id="alcoholLevel" placeholder="Ej. 0.00" step="0.01" min="0" required />
+      <label for="personImage">Foto de la persona (opcional)</label>
+      <input type="file" id="personImage" accept="image/*" />
+      <button type="submit">Guardar Prueba</button>
+    </form>
+    <div id="testMessage"></div>
+  </section>
+
+  <!-- Historial -->
+  <section id="history" class="card" style="display:none;">
+    <h2>Historial de Pruebas</h2>
+    <input type="text" id="searchTests" placeholder="Buscar por nombre, ID o placa..." oninput="filterHistory()" autocomplete="off"/>
+    <div id="historyList"></div>
+  </section>
+
+  <!-- Reportes (simple placeholder) -->
+  <section id="reports" class="card" style="display:none;">
+    <h2>Reportes Mensuales</h2>
+    <p>En esta sección podrás visualizar reportes detallados (próximamente).</p>
+    <p>Funcionalidades avanzadas serán añadidas en próximas versiones.</p>
+  </section>
+
+  <!-- Estadísticas (simple placeholder) -->
+  <section id="stats" class="card" style="display:none;">
+    <h2>Estadísticas Generales</h2>
+    <p>Estadísticas y gráficos del uso del alcoholímetro.</p>
+    <p>Próximamente.</p>
+  </section>
+
+  <!-- Perfil usuario -->
+  <section id="profile" class="card" style="display:none;">
+    <h2>Perfil de Usuario</h2>
+    <p><strong>Nombre:</strong> <span id="profileName"></span></p>
+    <p><strong>Correo:</strong> <span id="profileEmail"></span></p>
+    <button onclick="logout()">Cerrar sesión</button>
+  </section>
+</div>
+
+<!-- MODAL PARA VER IMAGEN Y DETALLES -->
+<div id="modalOverlay">
+  <div id="modalContent">
+    <button id="modalCloseBtn" title="Cerrar modal">×</button>
+    <img src="" alt="Imagen Persona" id="modalImage" />
+    <h3 id="modalName"></h3>
+    <p><strong>ID:</strong> <span id="modalId"></span></p>
+    <p><strong>Placa:</strong> <span id="modalPlate"></span></p>
+    <p><strong>Nivel Alcohol:</strong> <span id="modalAlcohol"></span></p>
+    <p><strong>Resultado:</strong> <span id="modalResult"></span></p>
+    <p><small>Fecha y hora de registro: <span id="modalDate"></span></small></p>
+  </div>
+</div>
+
+<!-- AUTENTICACIÓN INICIAL -->
+<div id="authContainer">
+  <!-- FORMULARIO LOGIN -->
+  <form id="loginForm" autocomplete="off">
+    <h2>Ingreso Oficial</h2>
+    <label for="loginEmail">Correo electrónico</label>
+    <input type="email" id="loginEmail" placeholder="usuario@ejemplo.com" required />
+    <label for="loginPassword">Contraseña</label>
+    <input type="password" id="loginPassword" placeholder="********" required />
+    <button type="submit">Iniciar Sesión</button>
+    <p>¿No tienes cuenta? <a href="#" id="showRegister">Regístrate aquí</a></p>
+    <p id="loginError" class="alert error" style="display:none;"></p>
+  </form>
+
+  <!-- FORMULARIO REGISTRO -->
+  <form id="registerForm" autocomplete="off" style="display:none;">
+    <h2>Registro Nuevo Usuario</h2>
+    <label for="registerName">Nombre completo</label>
+    <input type="text" id="registerName" placeholder="Ej. Juan Pérez" required />
+    <label for="registerEmail">Correo electrónico</label>
+    <input type="email" id="registerEmail" placeholder="usuario@ejemplo.com" required />
+    <label for="registerPassword">Contraseña</label>
+    <input type="password" id="registerPassword" placeholder="********" required />
+    <button type="submit">Registrarse</button>
+    <p>¿Ya tienes cuenta? <a href="#" id="showLogin">Iniciar sesión aquí</a></p>
+    <p id="registerError" class="alert error" style="display:none;"></p>
+    <p id="registerSuccess" class="alert success" style="display:none;"></p>
+  </form>
+</div>
+
+<script>
+  // Variables de usuarios y sesión
+  let users = JSON.parse(localStorage.getItem('users')) || [];
+  let currentUser = null;
+  let tests = JSON.parse(localStorage.getItem('tests')) || [];
+
+  // ELEMENTOS
+  const authContainer = document.getElementById('authContainer');
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
+  const loginError = document.getElementById('loginError');
+  const registerError = document.getElementById('registerError');
+  const registerSuccess = document.getElementById('registerSuccess');
+  const showRegisterLink = document.getElementById('showRegister');
+  const showLoginLink = document.getElementById('showLogin');
+
+  const sidebar = document.getElementById('sidebar');
+  const main = document.getElementById('main');
+
+  // Cambiar entre login y registro
+  showRegisterLink.addEventListener('click', e => {
+    e.preventDefault();
+    loginForm.style.display = 'none';
+    registerForm.style.display = 'block';
+    loginError.style.display = 'none';
+    registerError.style.display = 'none';
+    registerSuccess.style.display = 'none';
+  });
+
+  showLoginLink.addEventListener('click', e => {
+    e.preventDefault();
+    registerForm.style.display = 'none';
+    loginForm.style.display = 'block';
+    loginError.style.display = 'none';
+    registerError.style.display = 'none';
+    registerSuccess.style.display = 'none';
+  });
+
+  // Login
+  loginForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPassword').value;
+    const user = users.find(u => u.email === email && u.password === pass);
+    if(user){
+      currentUser = user;
+      loginError.style.display = 'none';
+      authContainer.style.display = 'none';
+      sidebar.style.display = 'flex';
+      main.style.display = 'block';
+      showSection('dashboard');
+      updateDashboard();
+    } else {
+      loginError.textContent = 'Correo o contraseña incorrectos.';
+      loginError.style.display = 'block';
+    }
+  });
+
+  // Registro
+  registerForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const name = document.getElementById('registerName').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const pass = document.getElementById('registerPassword').value;
+
+    if(!name || !email || !pass){
+      registerError.textContent = 'Por favor completa todos los campos.';
+      registerError.style.display = 'block';
+      registerSuccess.style.display = 'none';
+      return;
+    }
+
+    if(users.find(u => u.email === email)){
+      registerError.textContent = 'El correo ya está registrado.';
+      registerError.style.display = 'block';
+      registerSuccess.style.display = 'none';
+      return;
+    }
+
+    users.push({name, email, password: pass});
+    localStorage.setItem('users', JSON.stringify(users));
+    registerSuccess.textContent = 'Registro exitoso. Ya puedes iniciar sesión.';
+    registerSuccess.style.display = 'block';
+    registerError.style.display = 'none';
+    registerForm.reset();
+
+    setTimeout(() => {
+      registerForm.style.display = 'none';
+      loginForm.style.display = 'block';
+      registerSuccess.style.display = 'none';
+    }, 2000);
+  });
+
+  // Navegación entre secciones
+  function showSection(sectionId) {
+    // Ocultar todas
+    document.querySelectorAll('#main > section').forEach(sec => {
+      sec.style.display = 'none';
+    });
+    // Quitar active de botones
+    document.querySelectorAll('#sidebar nav button').forEach(btn => {
+      btn.classList.remove('active');
+    });
+
+    // Mostrar la seleccionada
+    const section = document.getElementById(sectionId);
+    if(section) section.style.display = 'block';
+
+    // Marcar botón activo
+    const btn = document.querySelector(`#sidebar nav button[onclick="showSection('${sectionId}')"]`);
+    if(btn) btn.classList.add('active');
+  }
+
+  // Logout
+  function logout() {
+    currentUser = null;
+    authContainer.style.display = 'block';
+    sidebar.style.display = 'none';
+    main.style.display = 'none';
+    loginForm.reset();
+    registerForm.reset();
+    registerForm.style.display = 'none';
+    loginForm.style.display = 'block';
+  }
+
+  // Actualizar panel principal
+  function updateDashboard() {
+    document.getElementById('totalTests').textContent = tests.length;
+    document.getElementById('profileName').textContent = currentUser.name;
+    document.getElementById('profileEmail').textContent = currentUser.email;
+  }
+
+  // Registrar prueba
+  const testForm = document.getElementById('testForm');
+  const testMessage = document.getElementById('testMessage');
+
+  testForm.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const name = document.getElementById('testName').value.trim();
+    const id = document.getElementById('testId').value.trim();
+    const plate = document.getElementById('vehiclePlate').value.trim();
+    const alcoholLevelStr = document.getElementById('alcoholLevel').value.trim();
+    const alcoholLevel = parseFloat(alcoholLevelStr);
+
+    if(name === '' || id === '' || isNaN(alcoholLevel) || alcoholLevel < 0){
+      testMessage.textContent = 'Por favor completa los campos requeridos correctamente.';
+      testMessage.className = 'alert error';
+      return;
+    }
+
+    // Resultado según nivel alcohol
+    // Negativo: < 0.40, Positivo >= 0.40
+    const resultado = alcoholLevel >= 0.40 ? "Positiva" : "Negativa";
+
+    // Leer imagen si hay
+    const fileInput = document.getElementById('personImage');
+    const file = fileInput.files[0];
+
+    if(file){
+      const reader = new FileReader();
+      reader.onload = function(ev){
+        guardarPrueba(name, id, plate, alcoholLevel, resultado, ev.target.result);
+      }
+      reader.readAsDataURL(file);
+    } else {
+      guardarPrueba(name, id, plate, alcoholLevel, resultado, null);
+    }
+  });
+
+  // Guardar prueba en localStorage y actualizar UI
+  function guardarPrueba(name, id, plate, alcoholLevel, resultado, imgBase64){
+    const fecha = new Date().toLocaleString();
+    const prueba = {name, id, plate, alcoholLevel, resultado, imgBase64, fecha};
+    tests.push(prueba);
+    localStorage.setItem('tests', JSON.stringify(tests));
+    testMessage.textContent = 'Prueba guardada correctamente.';
+    testMessage.className = 'alert success';
+    testForm.reset();
+    actualizarHistorial();
+    updateDashboard();
+    showSection('history');
+  }
+
+  // Mostrar historial
+  function actualizarHistorial(){
+    const container = document.getElementById('historyList');
+    container.innerHTML = '';
+
+    if(tests.length === 0){
+      container.innerHTML = '<p>No hay pruebas registradas aún.</p>';
+      return;
+    }
+
+    const tabla = document.createElement('table');
+    const thead = document.createElement('thead');
+    const trHead = document.createElement('tr');
+
+    ['Imagen', 'Nombre', 'ID / CURP', 'Placa', 'Nivel Alcohol', 'Resultado', 'Fecha', 'Acción'].forEach(text => {
+      const th = document.createElement('th');
+      th.textContent = text;
+      trHead.appendChild(th);
+    });
+    thead.appendChild(trHead);
+    tabla.appendChild(thead);
+
+    const tbody = document.createElement('tbody');
+
+    for(let i = tests.length -1; i >= 0; i--){ // Mostrar del más reciente al más antiguo
+      const t = tests[i];
+      const tr = document.createElement('tr');
+
+      // Imagen
+      const tdImg = document.createElement('td');
+      const img = document.createElement('img');
+      img.className = 'person-img';
+      img.alt = 'Foto Persona';
+      img.src = t.imgBase64 || 'https://cdn-icons-png.flaticon.com/512/149/149071.png'; // avatar genérico si no hay imagen
+      tdImg.appendChild(img);
+      tr.appendChild(tdImg);
+
+      // Nombre
+      const tdName = document.createElement('td');
+      tdName.textContent = t.name;
+      tr.appendChild(tdName);
+
+      // ID / CURP
+      const tdId = document.createElement('td');
+      tdId.textContent = t.id;
+      tr.appendChild(tdId);
+
+      // Placa
+      const tdPlate = document.createElement('td');
+      tdPlate.textContent = t.plate || '-';
+      tr.appendChild(tdPlate);
+
+      // Nivel Alcohol
+      const tdLevel = document.createElement('td');
+      tdLevel.textContent = t.alcoholLevel.toFixed(2);
+      tr.appendChild(tdLevel);
+
+      // Resultado con color correcto: rojo si Positiva, verde si Negativa
+      const tdResult = document.createElement('td');
+      tdResult.textContent = t.resultado;
+      tdResult.className = t.resultado === 'Positiva' ? 'result-positive' : 'result-negative';
+      tr.appendChild(tdResult);
+
+      // Fecha
+      const tdDate = document.createElement('td');
+      tdDate.textContent = t.fecha;
+      tr.appendChild(tdDate);
+
+      // Botón eliminar
+      const tdDelete = document.createElement('td');
+      const btnDelete = document.createElement('button');
+      btnDelete.textContent = 'Eliminar';
+      btnDelete.className = 'delete-btn';
+      btnDelete.title = 'Eliminar esta prueba';
+      btnDelete.addEventListener('click', () => {
+        if(confirm('¿Estás seguro que deseas eliminar esta prueba?')){
+          tests.splice(i, 1);
+          localStorage.setItem('tests', JSON.stringify(tests));
+          actualizarHistorial();
+          updateDashboard();
+        }
+      });
+      tdDelete.appendChild(btnDelete);
+      tr.appendChild(tdDelete);
+
+      // Mostrar detalles modal al click en fila
+      tr.addEventListener('click', (ev) => {
+        // Evitar click en botón eliminar abra modal
+        if(ev.target === btnDelete) return;
+
+        abrirModal(t);
+      });
+
+      tbody.appendChild(tr);
+    }
+
+    tabla.appendChild(tbody);
+    container.appendChild(tabla);
+  }
+
+  // Filtrar historial según texto de búsqueda
+  function filterHistory(){
+    const filtro = document.getElementById('searchTests').value.toLowerCase();
+    const rows = document.querySelectorAll('#historyList table tbody tr');
+
+    rows.forEach(row => {
+      const nombre = row.cells[1].textContent.toLowerCase();
+      const id = row.cells[2].textContent.toLowerCase();
+      const placa = row.cells[3].textContent.toLowerCase();
+
+      if(nombre.includes(filtro) || id.includes(filtro) || placa.includes(filtro)){
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  // Modal
+  const modalOverlay = document.getElementById('modalOverlay');
+  const modalImage = document.getElementById('modalImage');
+  const modalName = document.getElementById('modalName');
+  const modalId = document.getElementById('modalId');
+  const modalPlate = document.getElementById('modalPlate');
+  const modalAlcohol = document.getElementById('modalAlcohol');
+  const modalResult = document.getElementById('modalResult');
+  const modalDate = document.getElementById('modalDate');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+  function abrirModal(test) {
+    modalImage.src = test.imgBase64 || 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+    modalName.textContent = test.name;
+    modalId.textContent = test.id;
+    modalPlate.textContent = test.plate || '-';
+    modalAlcohol.textContent = test.alcoholLevel.toFixed(2);
+    modalResult.textContent = test.resultado;
+    modalResult.className = test.resultado === 'Positiva' ? 'result-positive' : 'result-negative';
+    modalDate.textContent = test.fecha;
+    modalOverlay.style.display = 'flex';
+  }
+
+  modalCloseBtn.addEventListener('click', () => {
+    modalOverlay.style.display = 'none';
+  });
+
+  modalOverlay.addEventListener('click', (ev) => {
+    if(ev.target === modalOverlay) modalOverlay.style.display = 'none';
+  });
+
+  // Al cargar la página, si hay usuario en sesión, mostrar panel, sino login
+  window.addEventListener('load', () => {
+    if(currentUser){
+      authContainer.style.display = 'none';
+      sidebar.style.display = 'flex';
+      main.style.display = 'block';
+      showSection('dashboard');
+      updateDashboard();
+    } else {
+      authContainer.style.display = 'block';
+      sidebar.style.display = 'none';
+      main.style.display = 'none';
+    }
+    actualizarHistorial();
+  });
+</script>
+
+</body>
+</html>
